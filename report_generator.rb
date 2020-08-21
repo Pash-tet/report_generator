@@ -48,7 +48,7 @@ class ReportGenerator
   def generate_report
     user_info = {}
 
-    users.each { |user| user_info.merge!("#{user[:first_name]} #{user[:last_name]}" => user_stats(user)) }
+    users.each { |user| user_info.merge!("#{user[:last_name]} #{user[:first_name]}" => user_stats(user)) }
 
     File.write('result.json', overall_info.merge!(usersStats: user_info).to_json)
   end

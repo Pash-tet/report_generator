@@ -1,4 +1,5 @@
 .idea
 .DS_Store
+result.json.zip.DS_Store
 data_large.txt
 result.json
