@@ -27,7 +27,7 @@ class ReportGenerator
       attrs = line.split(',')
 
       if attrs[0] == 'session'
-        last_user = @users.last
+        last_user = users.last
         session = {
           user_id: attrs[1],
           id: attrs[2],
@@ -36,9 +36,9 @@ class ReportGenerator
           date: Date.strptime(attrs[5], '%Y-%m-%d')
         }
         last_user[:sessions] << session if last_user[:id] == attrs[1]
-        @sessions << session
+        sessions << session
       elsif attrs[0] == 'user'
-        @users << { id: attrs[1], first_name: attrs[2], last_name: attrs[3], age: attrs[4], sessions: [] }
+        users << { id: attrs[1], first_name: attrs[2], last_name: attrs[3], age: attrs[4], sessions: [] }
       else
         next
       end
@@ -54,18 +54,18 @@ class ReportGenerator
   end
 
   def overall_info
-    uniq_browsers = @sessions.map { |s| s[:browser] }.uniq
+    uniq_browsers = sessions.map { |s| s[:browser] }.uniq
 
     {
       totalUsers: users.count,
       uniqueBrowsersCount: uniq_browsers.count,
-      totalSessions: @sessions.count,
+      totalSessions: sessions.count,
       allBrowsers: uniq_browsers.map(&:upcase).sort.join(', ')
     }
   end
 
   def user_stats(user)
-    user_sessions = user[:sessions].empty? ? @sessions.select { |s| s[:user_id] == user[:id] } : user[:sessions]
+    user_sessions = user[:sessions].empty? ? sessions.select { |s| s[:user_id] == user[:id] } : user[:sessions]
     sessions_periods = user_sessions.map { |s| s[:time] }
     sessions_browsers = user_sessions.map { |s| s[:browser] }.sort
 
