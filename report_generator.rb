@@ -2,6 +2,7 @@
 
 require 'date'
 require 'json'
+require 'byebug'
 
 # Class generates file report.json with struct information from text file
 class ReportGenerator
@@ -15,6 +16,7 @@ class ReportGenerator
 
   def call
     parse_file
+    check_data_consistency
     generate_report
   end
 
@@ -29,19 +31,30 @@ class ReportGenerator
       if attrs[0] == 'session'
         last_user = users.last
         session = {
-          user_id: attrs[1],
+          user_id: attrs[1].to_i,
           id: attrs[2],
           browser: attrs[3],
           time: attrs[4].to_i,
           date: Date.strptime(attrs[5], '%Y-%m-%d')
         }
-        last_user[:sessions] << session if last_user[:id] == attrs[1]
+        last_user[:sessions] << session if last_user[:id] == attrs[1].to_i
         sessions << session
       elsif attrs[0] == 'user'
-        users << { id: attrs[1], first_name: attrs[2], last_name: attrs[3], age: attrs[4], sessions: [] }
+        users << { id: attrs[1].to_i, first_name: attrs[2], last_name: attrs[3], age: attrs[4], sessions: [] }
       else
         next
       end
+    end
+  end
+
+  def check_data_consistency
+    users_sessions = users.map { |u| u[:sessions] }.flatten
+    return if sessions.count == users_sessions.count
+
+    missing_sessions = sessions - users_sessions
+    missing_sessions.each do |session|
+      user = users.select { |u| u[:id] == session[:user_id] }.first
+      user[:sessions] << session
     end
   end
 
@@ -65,7 +78,7 @@ class ReportGenerator
   end
 
   def user_stats(user)
-    user_sessions = user[:sessions].empty? ? sessions.select { |s| s[:user_id] == user[:id] } : user[:sessions]
+    user_sessions = user[:sessions]
     sessions_periods = user_sessions.map { |s| s[:time] }
     sessions_browsers = user_sessions.map { |s| s[:browser] }.sort
 
